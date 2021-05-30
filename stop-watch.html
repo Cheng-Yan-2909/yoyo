@@ -29,48 +29,6 @@ function resetCenter() {
     ctx.translate(canvasCenter.x, canvasCenter.y);
 }
 
-function getClockSize() {
-    return 100; // dummy
-}
-
-function makeClock() {
-    
-    
-    ctx.beginPath();
-    ctx.arc(0, 0, getClockSize(), 0, 2 * Math.PI);
-    ctx.stroke();
-    
-    placeNumbers();
-    
-    //console.log("done makeClock: ");
-}
-
-function placeNumbers() {
-    ctx.beginPath();
-    ctx.font = "16px Georgia";
-    for( var i = 1; i < 13; i++ ) {
-        var ang = 2 * Math.PI / 12 * i;
-        var xOffset = 11;
-        if( i == 6 || i == 12 ) {
-            xOffset = 0;
-        }
-        if( i > 6 ) {
-            xOffset = -1 * (xOffset + 8);
-        }
-        ctx.fillText( "" + i, getClockSize() * Math.sin( ang ) + xOffset, -1 * getClockSize() * Math.cos( ang ) );
-    }
-    ctx.stroke();
-    
-}
-
-function getMinLength() {
-    return getClockSize() - 15;
-}
-
-function getHourLength() {
-    return getClockSize() - 30;
-}
-
 function clearRec() {
     var c = getCanvasCenter();
     ctx.clearRect( 0, 0, c.x, c.y );
@@ -142,10 +100,10 @@ var Quad = function( index, r ) {
     
     this.getY = function() {
         if( this.index == 1 || this.index == 4 ) {
-            return (-1 * Math.sqrt( getClockSize() * getClockSize() - (this.x * this.x) ) );
+            return (-1 * Math.sqrt( this.r * this.r - (this.x * this.x) ) );
         }
         if( this.index == 2 || this.index == 3) {
-            return (Math.sqrt( getClockSize() * getClockSize() - (this.x * this.x) ) );   
+            return (Math.sqrt( (this.r * this.r) - (this.x * this.x) ) );   
         }
     }
 }
@@ -158,9 +116,9 @@ var Circle = function( r ) {
               , new Quad(2, r) 
               , new Quad(3, r)
               , new Quad(4, r)
-     ];
-     this.t = 100;
-     this.repeater = 0;
+    ];
+    this.t = 100;
+    this.repeater = 0;
      
     this.init = function() {
         this.quadIndex = 0;
@@ -176,6 +134,8 @@ var Circle = function( r ) {
     }
     
     this.draw = function() {
+        this.makeClock();
+        
         if( ! (this.quads[this.quadIndex]).draw() ) {
             this.quadIndex++;
         }
@@ -183,23 +143,40 @@ var Circle = function( r ) {
             this.quadIndex = 0;
         }
     }
-}
-
-function q1() { 
     
-    if( q1_x > getClockSize() ) {
-        q1_x = 0;
-    }
-    
-    clearRec();
-    makeClock();
-    
-    ctx.moveTo(0, 0);
-    ctx.lineTo(q1_x, -1 * Math.sqrt( getClockSize() * getClockSize() - (q1_x * q1_x) ));
-    
-    ctx.stroke();
-    
-    q1_x++;
+    this.getClockSize = function() {
+	    return 100; // dummy
+	}
+	
+	this.makeClock = function() {
+	    
+	    
+	    ctx.beginPath();
+	    ctx.arc(0, 0, this.getClockSize(), 0, 2 * Math.PI);
+	    ctx.stroke();
+	    
+	    this.placeNumbers();
+	    
+	}
+	
+	this.placeNumbers = function() {
+	    ctx.beginPath();
+	    ctx.font = "16px Georgia";
+	    for( var i = 1; i < 13; i++ ) {
+	        var ang = 2 * Math.PI / 12 * i;
+	        var xOffset = 11;
+	        if( i == 6 || i == 12 ) {
+	            xOffset = 0;
+	        }
+	        if( i > 6 ) {
+	            xOffset = -1 * (xOffset + 8);
+	        }
+	        ctx.fillText( "" + i, this.getClockSize() * Math.sin( ang ) + xOffset, -1 * this.getClockSize() * Math.cos( ang ) );
+	    }
+	    ctx.stroke();
+	    
+	}
+	    
 }
 
 
@@ -220,7 +197,6 @@ function run() {
     }
 
     clearRec();
-    makeClock();
     
     stopWatch.draw();
     
@@ -250,11 +226,9 @@ function debugLog( a, b, c, d ) {
     
     resetCenter();
     
-    clearRec();
-    makeClock();
-    
-    stopWatch = new Circle( getClockSize(), 100 );
+    stopWatch = new Circle( 100, 100 );
     stopWatch.init();
+    stopWatch.makeClock();
     
 }());
 
