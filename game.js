@@ -13,15 +13,18 @@ function Bullet() {
 	    "x" : 0,
         "y" : 0
 	};
-    this.r = 5;
+    this.r = 50;
     this.speed = 3;
+    this.img = new Image();
     
     this.draw = function() {
 	    var x = this.location.x + (bar.getWidth() / 2);
 
-        ctx.beginPath();
-        ctx.arc(x, this.location.y - this.r - this.r, this.r, 0, 2 * Math.PI);
-        ctx.fill();
+        //ctx.beginPath();
+        //ctx.arc(x, this.location.y - this.r - this.r, this.r, 0, 2 * Math.PI);
+        //ctx.fill();
+
+        ctx.drawImage(this.img, x, this.location.y - this.r);
 
         this.location.y = this.location.y - this.speed;
     }
@@ -30,6 +33,8 @@ function Bullet() {
 	    var l = bar.getLocation();
 	    this.location.x = l.x,
         this.location.y = l.y;
+
+        this.img.src = "sword-s.png";
     }
 
     this.isBulletGone = function() {
