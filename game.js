@@ -16,22 +16,22 @@ var fireRate = 300;
 var firingTrigger = 0;
 var addBombRate = 3000;
 
-function Bomb() {
-    this.location = {
+class Bomb {
+    location = {
         "x" : 0,
         "y" : 0
     };
     
-    this.imgSize = {
+    imgSize = {
         "width" : 23,
         "height" : 59
     };
     
-    this.speed = 1;
-    this.img = new Image();
+    speed = 1;
+    img = new Image();
     
-    this.init = function() {
-        maxScreenXY = bar.getMaxStartLocation();
+    init() {
+        var maxScreenXY = bar.getMaxStartLocation();
         
         this.location.x = Math.floor(Math.random() * 1001) % maxScreenXY.x;
 
@@ -40,27 +40,27 @@ function Bomb() {
         return this;
     }
     
-    this.draw = function() {
+    draw() {
         ctx.drawImage(this.img, this.location.x, this.location.y);
 
         this.location.y = this.location.y + this.speed;
     }
     
-    this.isBombGone = function() {
+    isBombGone() {
         return (this.location.y > bar.getMaxStartLocation().y );
     }
 }
 
-function Bullet() {
-    this.location = {
+class Bullet {
+    location = {
 	    "x" : 0,
         "y" : 0
 	};
-    this.r = 50;
-    this.speed = 3;
-    this.img = new Image();
+    r = 50;
+    speed = 3;
+    img = new Image();
     
-    this.draw = function() {
+    draw() {
         //ctx.beginPath();
         //ctx.arc(x, this.location.y - this.r - this.r, this.r, 0, 2 * Math.PI);
         //ctx.fill();
@@ -70,7 +70,7 @@ function Bullet() {
         this.location.y = this.location.y - this.speed;
     }
 
-    this.init = function() {
+    init() {
 	    this.location = bar.getLocation();
         this.location.x = this.location.x + (bar.getWidth() / 2);
 
@@ -79,55 +79,55 @@ function Bullet() {
         return this;
     }
 
-    this.isBulletGone = function() {
+    isBulletGone() {
 	    return ( (this.location.y + this.r) < 0 ); 
     }
 }
 
-function Bar() {
+class Bar {
 	
-	this.width = 60;
-	this.thickness = 3;
-	this.location = {
+	width = 60;
+	thickness = 3;
+	location = {
 		"x" : 0,
 		"y" : 0
 	};
-	this.fromBottom = 10;
-	this.fromSide = 5;
-	this.maxStartLocation = {
+	fromBottom = 10;
+	fromSide = 5;
+	maxStartLocation = {
 		"x" : 0,
 		"y" : 0
 	};
-	this.barMoveSpeed = 2;
+	barMoveSpeed = 2;
     
-    this.getMaxStartLocation = function() {
+    getMaxStartLocation() {
         return {
             "x" : this.maxStartLocation.x,
             "y" : this.maxStartLocation.y
         }
     }
 	
-	this.init = function() {
+	init() {
 		this.setMaxStartLocation();
 		this.location.y = this.maxStartLocation.y;
 	}
 	
-	this.getWidth = function() {
+	getWidth() {
 		return (this.width + 0);
 	}
 	
-	this.getLocation = function() {
+	getLocation() {
 		return {
             "x" : this.location.x,
             "y" : this.location.y
         };
 	}
     
-    this.getBarThickness = function() {
+    getBarThickness() {
         return (this.thickness + 0);
     }
 	
-	this.moveLeft = function() {
+	moveLeft() {
 		if( this.location.x > 0 ) {
 			this.location.x = this.location.x - this.barMoveSpeed;
 		}
@@ -136,7 +136,7 @@ function Bar() {
 		}
 	}
 	
-	this.moveRight = function() {
+	moveRight() {
 		if( this.location.x < this.maxStartLocation.x ) {
 			this.location.x = this.location.x + this.barMoveSpeed;
 		}
@@ -145,7 +145,7 @@ function Bar() {
 		}
 	}
 	
-	this.draw = function() {
+	draw() {
 		ctx.beginPath();
 		ctx.lineWidth = this.thickness;
 		ctx.moveTo( this.location.x + this.fromSide, this.location.y - this.fromBottom);
@@ -153,7 +153,7 @@ function Bar() {
 		ctx.stroke();
 	}
 	
-	this.setMaxStartLocation = function() {
+	setMaxStartLocation() {
 		var size = getCavasSize();
 
         this.maxStartLocation.y = size.y - this.fromBottom;
