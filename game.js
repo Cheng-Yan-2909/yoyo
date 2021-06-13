@@ -6,12 +6,50 @@ var canvasElement;
 var ctx;
 var bar;
 var bullets = new Array();
+var bombs = new Array();
 var dir = {
     "left" : 0,
     "right" : 0
 };
 var firing = 0;
-var firingWait = 0;
+var fireRate = 300;
+var firingTrigger = 0;
+var addBombRate = 3000;
+
+function Bomb() {
+    this.location = {
+        "x" : 0,
+        "y" : 0
+    };
+    
+    this.imgSize = {
+        "width" : 23,
+        "height" : 59
+    };
+    
+    this.speed = 1;
+    this.img = new Image();
+    
+    this.init = function() {
+        maxScreenXY = bar.getMaxStartLocation();
+        
+        this.location.x = Math.floor(Math.random() * 1001) % maxScreenXY.x;
+
+        this.img.src = "bomb-3-s.jpg";
+        
+        return this;
+    }
+    
+    this.draw = function() {
+        ctx.drawImage(this.img, this.location.x, this.location.y);
+
+        this.location.y = this.location.y + this.speed;
+    }
+    
+    this.isBombGone = function() {
+        return (this.location.y > bar.getMaxStartLocation().y );
+    }
+}
 
 function Bullet() {
     this.location = {
@@ -23,27 +61,26 @@ function Bullet() {
     this.img = new Image();
     
     this.draw = function() {
-	    var x = this.location.x + (bar.getWidth() / 2);
-
         //ctx.beginPath();
         //ctx.arc(x, this.location.y - this.r - this.r, this.r, 0, 2 * Math.PI);
         //ctx.fill();
 
-        ctx.drawImage(this.img, x, this.location.y - this.r - bar.getBarThickness());
+        ctx.drawImage(this.img, this.location.x, this.location.y - this.r - bar.getBarThickness());
 
         this.location.y = this.location.y - this.speed;
     }
 
     this.init = function() {
-	    var l = bar.getLocation();
-	    this.location.x = l.x,
-        this.location.y = l.y;
+	    this.location = bar.getLocation();
+        this.location.x = this.location.x + (bar.getWidth() / 2);
 
         this.img.src = "sword-s.png";
+        
+        return this;
     }
 
     this.isBulletGone = function() {
-	    return ( this.location.y < 0 ); 
+	    return ( (this.location.y + this.r) < 0 ); 
     }
 }
 
@@ -62,6 +99,13 @@ function Bar() {
 		"y" : 0
 	};
 	this.barMoveSpeed = 2;
+    
+    this.getMaxStartLocation = function() {
+        return {
+            "x" : this.maxStartLocation.x,
+            "y" : this.maxStartLocation.y
+        }
+    }
 	
 	this.init = function() {
 		this.setMaxStartLocation();
@@ -69,15 +113,18 @@ function Bar() {
 	}
 	
 	this.getWidth = function() {
-		return this.width;
+		return (this.width + 0);
 	}
 	
 	this.getLocation = function() {
-		return this.location;
+		return {
+            "x" : this.location.x,
+            "y" : this.location.y
+        };
 	}
     
     this.getBarThickness = function() {
-        return this.thickness;
+        return (this.thickness + 0);
     }
 	
 	this.moveLeft = function() {
@@ -142,14 +189,6 @@ function autoDraw() {
 		bar.moveRight();
 	}
 	
-	if( firing && firingWait < 0 ) {
-	    var b = new Bullet();
-        b.init();
-        bullets.push( b );
-        firingWait = 20;
-    }
-    firingWait = firingWait - 1;
-	
     bar.draw();
 
     var bulletCount = bullets.length;
@@ -160,10 +199,32 @@ function autoDraw() {
 	        bullets.push(b);
         }
     }
+    
+    var bombCount = bombs.length;
+    for( var i = 0; i < bombCount; i = i + 1 ) {
+        var b = bombs.shift();
+        b.draw();
+        if( ! b.isBombGone() ) {
+            bombs.push(b);
+        }
+    }
+}
+
+function fireSword() {
+    if( firing ) {
+        bullets.push( (new Bullet()).init() );
+        firingTrigger = setTimeout( fireSword, fireRate);
+    }
+}
+
+function createBombs() {
+    bombs.push( (new Bomb()).init() );
+    setTimeout( createBombs, addBombRate);
 }
 
 function run() {
     window.setInterval(autoDraw, 10);
+    setTimeout( createBombs, addBombRate);
     debugLog("run");
 }
 
@@ -184,7 +245,10 @@ function keyDownAction( event ) {
 		dir.right = 1;
 	}
 	if( key == 32 ) {
-		firing = 1;
+        if( firing == 0 ) {
+            firing = 1;
+            fireSword();
+        }
 	}
 }
 
@@ -198,6 +262,7 @@ function keyUpAction(event) {
         dir.right = 0;
     }
     if( key == 32 ) {
+        clearTimeout( firingTrigger );
 	    firing = 0;
     }
 }
