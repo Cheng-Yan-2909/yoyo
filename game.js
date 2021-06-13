@@ -7,6 +7,8 @@ var ctx;
 var bar;
 var bullets = new Array();
 var dir = 0; // -1 = left, 0 = stop, 1 = right
+var firing = 0;
+var firingWait = 0;
 
 function Bullet() {
     this.location = {
@@ -133,6 +135,14 @@ function autoDraw() {
 		bar.moveRight();
 	}
 	
+	if( firing && firingWait < 0 ) {
+	    var b = new Bullet();
+        b.init();
+        bullets.push( b );
+        firingWait = 20;
+    }
+    firingWait = firingWait - 1;
+	
     bar.draw();
 
     var bulletCount = bullets.length;
@@ -167,9 +177,7 @@ function keyDownAction( event ) {
 		dir = 1;
 	}
 	else if( key == 32 ) {
-		var b = new Bullet();
-		b.init();
-		bullets.push( b );
+		firing = 1;
 	}
 	
 	event.stopPropagation();
@@ -180,6 +188,9 @@ function keyUpAction(event) {
     
     if( key == 37 || key == 39 ) { 
         dir = 0;
+    }
+    else if( key == 32 ) {
+	    firing = 0;
     }
 }
 
