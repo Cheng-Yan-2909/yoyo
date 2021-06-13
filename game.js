@@ -16,6 +16,10 @@ var fireRate = 300;
 var firingTrigger = 0;
 var addBombRate = 3000;
 
+class GameBoard {
+    
+}
+
 class Bomb {
     location = {
         "x" : 0,
@@ -56,16 +60,20 @@ class Bullet {
 	    "x" : 0,
         "y" : 0
 	};
-    r = 50;
+    imgSize = {
+        "width" : 24,
+        "height" : 50,
+        "r" : 5
+    };
     speed = 3;
     img = new Image();
     
     draw() {
         //ctx.beginPath();
-        //ctx.arc(x, this.location.y - this.r - this.r, this.r, 0, 2 * Math.PI);
+        //ctx.arc(this.location.x, this.location.y - this.imgSize.r - this.imgSize.r, this.imgSize.r, 0, 2 * Math.PI);
         //ctx.fill();
 
-        ctx.drawImage(this.img, this.location.x, this.location.y - this.r - bar.getBarThickness());
+        ctx.drawImage(this.img, this.location.x, this.location.y - this.imgSize.height - bar.getBarThickness());
 
         this.location.y = this.location.y - this.speed;
     }
