@@ -6,7 +6,10 @@ var canvasElement;
 var ctx;
 var bar;
 var bullets = new Array();
-var dir = 0; // -1 = left, 0 = stop, 1 = right
+var dir = {
+    "left" : 0,
+    "right" : 0
+};
 var firing = 0;
 var firingWait = 0;
 
@@ -26,7 +29,7 @@ function Bullet() {
         //ctx.arc(x, this.location.y - this.r - this.r, this.r, 0, 2 * Math.PI);
         //ctx.fill();
 
-        ctx.drawImage(this.img, x, this.location.y - this.r);
+        ctx.drawImage(this.img, x, this.location.y - this.r - bar.getBarThickness());
 
         this.location.y = this.location.y - this.speed;
     }
@@ -58,7 +61,7 @@ function Bar() {
 		"x" : 0,
 		"y" : 0
 	};
-	this.barMoveSpeed = 3;
+	this.barMoveSpeed = 2;
 	
 	this.init = function() {
 		this.setMaxStartLocation();
@@ -72,6 +75,10 @@ function Bar() {
 	this.getLocation = function() {
 		return this.location;
 	}
+    
+    this.getBarThickness = function() {
+        return this.thickness;
+    }
 	
 	this.moveLeft = function() {
 		if( this.location.x > 0 ) {
@@ -128,10 +135,10 @@ function clearRec() {
 function autoDraw() {
 	clearRec();
 	
-	if( dir == -1 ) {
+	if( dir.left == 1 ) {
 		bar.moveLeft();
 	}
-	else if( dir == 1 ) {
+	else if( dir.right == 1 ) {
 		bar.moveRight();
 	}
 	
@@ -171,25 +178,26 @@ function keyDownAction( event ) {
 	var key = (event.which || event.keyCode);
 	
 	if( key == 37 ) { 
-		dir = -1;
+		dir.left = 1;
 	}
-	else if( key == 39 ) {
-		dir = 1;
+	if( key == 39 ) {
+		dir.right = 1;
 	}
-	else if( key == 32 ) {
+	if( key == 32 ) {
 		firing = 1;
 	}
-	
-	event.stopPropagation();
 }
 
 function keyUpAction(event) {
 	var key = (event.which || event.keyCode);
     
-    if( key == 37 || key == 39 ) { 
-        dir = 0;
+    if( key == 37 ) { 
+        dir.left = 0;
     }
-    else if( key == 32 ) {
+    if( key == 39 ) {
+        dir.right = 0;
+    }
+    if( key == 32 ) {
 	    firing = 0;
     }
 }
