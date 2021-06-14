@@ -1,0 +1,150 @@
+<html>
+<head>
+<title>Clock</title>
+</head>
+
+<script>
+/*
+    https://www.w3schools.com/graphics/canvas_reference.asp
+*/
+var canvasElement;
+var ctx;
+
+
+function getCanvasCenter() {
+    return { "x" : canvasElement.getBoundingClientRect().width / 2,
+             "y" : canvasElement.getBoundingClientRect().height / 2
+           };
+}
+
+function resetCenter() {
+    var canvasCenter = getCanvasCenter();
+    
+    ctx.translate(canvasCenter.x, canvasCenter.y);
+}
+
+function getClockSize() {
+    return 100; // dummy
+}
+
+function makeClock() {
+    
+    
+    ctx.beginPath();
+    ctx.arc(0, 0, getClockSize(), 0, 2 * Math.PI);
+    ctx.stroke();
+    
+    placeNumbers();
+    
+    //console.log("done makeClock: ");
+}
+
+function placeNumbers() {
+    ctx.beginPath();
+    ctx.font = "16px Georgia";
+    for( var i = 1; i < 13; i++ ) {
+        var ang = 2 * Math.PI / 12 * i;
+        var xOffset = 11;
+        if( i == 6 || i == 12 ) {
+            xOffset = 0;
+        }
+        if( i > 6 ) {
+            xOffset = -1 * (xOffset + 8);
+        }
+        ctx.fillText( "" + i, getClockSize() * Math.sin( ang ) + xOffset, -1 * getClockSize() * Math.cos( ang ) );
+    }
+    ctx.stroke();
+    
+}
+
+function getMinLength() {
+    return getClockSize() - 15;
+}
+
+function getHourLength() {
+    return getClockSize() - 30;
+}
+
+function clearRec() {
+    var c = getCanvasCenter();
+    ctx.clearRect( 0, 0, c.x, c.y );
+    ctx.clearRect( 0, 0, c.x, -1 * c.y );
+    ctx.clearRect( 0, 0, -1 * c.x, c.y );
+    ctx.clearRect( 0, 0, -1 * c.x, -1 * c.y );
+}
+
+function drawDot(num) {
+    
+    while( num > 1 ) {
+        var ang = ang = 2 * Math.PI / 60 * num;
+		ctx.beginPath();
+        ctx.arc(num * 4, -1 * (200 + 30 * Math.sin(ang)), 3, 0, 2 * Math.PI);
+        ctx.fillStyle = "#000000";
+        ctx.fill();
+        num--;
+    }
+}
+
+function run() {
+    var d = new Date();
+    var hour = d.getHours();
+    var min = d.getMinutes();
+    var sec = d.getSeconds();
+    var h_ang = 2 * Math.PI / 12 * hour;
+    var m_ang = 2 * Math.PI / 60 * min;
+    var s_ang = 2 * Math.PI / 60 * sec;
+    
+    clearRec();
+    makeClock();
+    
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(getHourLength() * Math.sin( h_ang ), -1 * getHourLength() * Math.cos( h_ang ));
+    
+    ctx.moveTo(0, 0);
+    ctx.lineTo(getMinLength() * Math.sin( m_ang ), -1 * getMinLength() * Math.cos( m_ang ));
+    
+    ctx.moveTo(0, 0);
+    ctx.lineTo(getClockSize() * Math.sin( s_ang ), -1 * getClockSize() * Math.cos( s_ang ));
+    
+    ctx.stroke();
+    
+    drawDot(sec);
+    
+    setTimeout( run, 500 );
+    
+    //ctx.fillText( "top", -300, -300 );
+    //ctx.fillText( "bottom", 300, 300 );
+    
+    //debugLog( -1 * canvasElement.getBoundingClientRect().width, -1 * canvasElement.getBoundingClientRect().height, canvasElement.getBoundingClientRect().width, canvasElement.getBoundingClientRect().height );
+    //debugLog( -1 * c.x, -1 * c.y, c.x, c.y );
+}
+
+function debugLog( a, b, c, d ) {
+    console.log( "" + a + ", " + b + ", " + c + ", " + d );
+}
+
+
+</script>
+
+<body>
+
+<canvas id="clock" width="800" height="800" style="border:solid 1px #dddddd;">
+</canvas>
+
+</body>
+
+<script>
+
+(function(){
+    canvasElement = document.getElementById("clock");
+    ctx = canvasElement.getContext("2d");
+    
+    resetCenter();
+    
+    run();
+}());
+
+</script>
+
+</html>
