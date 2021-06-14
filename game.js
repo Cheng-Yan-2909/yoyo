@@ -5,8 +5,6 @@
 var canvasElement;
 var ctx;
 var bar;
-var bullets = new Array();
-var bombs = new Array();
 var dir = {
     "left" : 0,
     "right" : 0
@@ -30,11 +28,9 @@ class GameBoard {
         var bulletCurrentLocation = this.getLocationKey(b);
         var bombPointAtBulletHit = this.getPointAtBulletHit(b);
         var bomb = this.bombLocation[bombPointAtBulletHit.x][bombPointAtBulletHit.y];
-        var bulletIindex = bullets.indexOf(b);
-        var bombIndex = bombs.indexOf(bomb);
+        var bombIndex = this.bombs.indexOf(bomb);
         
-        delete bullets[bulletIindex];
-        delete bombs[bombIndex];
+        delete this.bombs[bombIndex];
         delete this.bulletLocation[bulletCurrentLocation.x][bulletCurrentLocation.y];
         delete this.bombLocation[bombPointAtBulletHit.x][bombPointAtBulletHit.y];
     }
@@ -50,21 +46,21 @@ class GameBoard {
     addBomb() {
         var b = new Bomb();
         var location = this.getLocationKey(b);
-        //bombs.push(b);
-        if( ! bombLocation[location.x] ) {
-            bombLocation[location.x] = [];
+        this.bombs.push(b);
+        if( ! this.bombLocation[location.x] ) {
+            this.bombLocation[location.x] = [];
         }
-        bombLocation[location.x][location.y] = b;
+        this.bombLocation[location.x][location.y] = b;
     }
     
     addBullet() {
         var b = new Bullet();
         var location = this.getLocationKey(b);
-        //bullets.push(b);
-        if( ! bulletLocation[location.x] ) {
-            bulletLocation[location.x] = [];
+        this.bullets.push(b);
+        if( ! this.bulletLocation[location.x] ) {
+            this.bulletLocation[location.x] = [];
         }
-        bulletLocation[location.x][location.y] = b;
+        this.bulletLocation[location.x][location.y] = b;
     }
     
     updateBombLocation( b ) {
@@ -96,7 +92,7 @@ class GameBoard {
             if( this.bombLocation[x+i] ) {
                 if( this.bombLocation[x+i][location.y] ) {
                     return {
-                        x : x + 1,
+                        x : x + i,
                         y : location.y
                     };
                 }
@@ -357,9 +353,9 @@ function autoDraw() {
 	
     bar.draw();
 
-    var bulletCount = bullets.length;
+    var bulletCount = gameBoard.bullets.length;
     for( var i = 0; i < bulletCount; i = i + 1) {
-	    var b = bullets.shift();
+	    var b = gameBoard.bullets.shift();
 	    b.draw();
         
         if( gameBoard.isBulletHit(b) ) {
@@ -367,29 +363,31 @@ function autoDraw() {
             gameBoard.deleteBulletHit(b)
         }
         else if( ! b.isBulletGone()) {
-	        bullets.push(b);
+	        gameBoard.bullets.push(b);
         }
     }
     
-    var bombCount = bombs.length;
+    var bombCount = gameBoard.bombs.length;
     for( var i = 0; i < bombCount; i = i + 1 ) {
-        var b = bombs.shift();
-        b.draw();
-        if( ! b.isBombGone() ) {
-            bombs.push(b);
+        var b = gameBoard.bombs.shift();
+        if( b ) {
+            b.draw();
+            if( ! b.isBombGone() ) {
+                gameBoard.bombs.push(b);
+            }
         }
     }
 }
 
 function fireSword() {
     if( firing ) {
-        bullets.push( (new Bullet()).init() );
+        gameBoard.addBullet();
         firingTrigger = setTimeout( fireSword, fireRate);
     }
 }
 
 function createBombs() {
-    bombs.push( (new Bomb()).init() );
+    gameBoard.addBomb();
     setTimeout( createBombs, addBombRate);
 }
 
