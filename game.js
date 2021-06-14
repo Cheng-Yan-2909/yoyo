@@ -26,7 +26,18 @@ class GameBoard {
     bombLocation = [[]];
     bombRate = 3000;
     
-    
+    deleteBulletHit( b ) {
+        var bulletCurrentLocation = this.getLocationKey(b);
+        var bombPointAtBulletHit = this.getPointAtBulletHit(b);
+        var bomb = this.bombLocation[bombPointAtBulletHit.x][bombPointAtBulletHit.y];
+        var bulletIindex = bullets.indexOf(b);
+        var bombIndex = bombs.indexOf(bomb);
+        
+        delete bullets[bulletIindex];
+        delete bombs[bombIndex];
+        delete this.bulletLocation[bulletCurrentLocation.x][bulletCurrentLocation.y];
+        delete this.bombLocation[bombPointAtBulletHit.x][bombPointAtBulletHit.y];
+    }
     
     getLocationKey( b ) {
         return b.getLocation();
@@ -39,7 +50,7 @@ class GameBoard {
     addBomb() {
         var b = new Bomb();
         var location = this.getLocationKey(b);
-        bombs.push(b);
+        //bombs.push(b);
         if( ! bombLocation[location.x] ) {
             bombLocation[location.x] = [];
         }
@@ -49,7 +60,7 @@ class GameBoard {
     addBullet() {
         var b = new Bullet();
         var location = this.getLocationKey(b);
-        bullets.push(b);
+        //bullets.push(b);
         if( ! bulletLocation[location.x] ) {
             bulletLocation[location.x] = [];
         }
@@ -76,12 +87,36 @@ class GameBoard {
         this.bulletLocation[location.x][location.y] = b;
     }
     
-    isBulletHit( b ) {
+    getPointAtBulletHit( b ) {
         var location = this.getLocationKey(b);
-        if( ! this.bombLocation[location.x] ) {
-            return false;
+        var bombSize = 23; // see Bomb class, will fix later
+        var x = parseInt(location.x - (bombSize/2));
+        
+        for( var i = 0; i < bombSize; i++ ) {
+            if( this.bombLocation[x+i] ) {
+                if( this.bombLocation[x+i][location.y] ) {
+                    return {
+                        x : x + 1,
+                        y : location.y
+                    };
+                }
+            }
         }
-        return ( this.bombLocation[location.x][location.y] );
+        
+        return null;
+    }
+    
+    getObjAtBulletPoint( b ) {
+        var p = this.getPointAtBulletHit(b);
+        if( p ) {
+            return this.bombLocation[p.x][p.y]
+        }
+        
+        return null;
+    }
+    
+    isBulletHit( b ) {
+        return !(this.getPointAtBulletHit(b) == null);
     }
 }
 
@@ -329,6 +364,7 @@ function autoDraw() {
         
         if( gameBoard.isBulletHit(b) ) {
             console.log("A direct hit");
+            gameBoard.deleteBulletHit(b)
         }
         else if( ! b.isBulletGone()) {
 	        bullets.push(b);
