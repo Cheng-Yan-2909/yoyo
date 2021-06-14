@@ -16,6 +16,8 @@ var addBombRate = 3000;
 
 var gameBoard;
 
+var bombSerialId = 0; // increment
+
 class GameBoard {
     bullets = new Array();
     bulletLocation = [[]];
@@ -29,10 +31,33 @@ class GameBoard {
         var bombPointAtBulletHit = this.getPointAtBulletHit(b);
         var bomb = this.bombLocation[bombPointAtBulletHit.x][bombPointAtBulletHit.y];
         var bombIndex = this.bombs.indexOf(bomb);
+        var bulletIndex = this.bullets.indexOf(b);
         
-        delete this.bombs[bombIndex];
+        if( bulletIndex > -1 ) {
+            this.bullets[bulletIndex] = null;
+            delete this.bullets[bulletIndex];
+        }
+        
+        if( bombIndex > -1 ) {
+            this.bombs[bombIndex] = null;
+            delete this.bombs[bombIndex];
+        }
+
         delete this.bulletLocation[bulletCurrentLocation.x][bulletCurrentLocation.y];
+        
         delete this.bombLocation[bombPointAtBulletHit.x][bombPointAtBulletHit.y];
+        this.bombLocation[bombPointAtBulletHit.x] = [];
+    }
+    
+    removeBulletFromBoard( b ) {
+        var bulletCurrentLocation = this.getLocationKey(b);
+        delete this.bulletLocation[bulletCurrentLocation.x][bulletCurrentLocation.y];
+    }
+    
+    removeBombFromBoard( b ) {
+        var bombCurrentLocation = this.getLocationKey(b);
+        delete this.bombLocation[bombCurrentLocation.x][bombCurrentLocation.y];
+        this.bombLocation[bombCurrentLocation.x] = [];
     }
     
     getLocationKey( b ) {
@@ -66,6 +91,7 @@ class GameBoard {
     updateBombLocation( b ) {
         var preLocation = this.getPrevLocationKey(b);
         var location = this.getLocationKey(b);
+        this.bombLocation[preLocation.x][preLocation.y] = null;
         delete this.bombLocation[preLocation.x][preLocation.y];
         if( ! this.bombLocation[location.x] ) {
             this.bombLocation[location.x] = [];
@@ -76,6 +102,7 @@ class GameBoard {
     updateBulletLocation( b ) {
         var preLocation = this.getPrevLocationKey(b);
         var location = this.getLocationKey(b);
+        this.bulletLocation[preLocation.x][preLocation.y] = null;
         delete this.bulletLocation[preLocation.x][preLocation.y];
         if( ! this.bulletLocation[location.x] ) {
             this.bulletLocation[location.x] = [];
@@ -91,6 +118,7 @@ class GameBoard {
         for( var i = 0; i < bombSize; i++ ) {
             if( this.bombLocation[x+i] ) {
                 if( this.bombLocation[x+i][location.y] ) {
+                    debugLog("bomb '" + this.bombLocation[x+i][location.y].id + "' hit at: (" + (x+i) + "," + location.y + ")")
                     return {
                         x : x + i,
                         y : location.y
@@ -117,6 +145,8 @@ class GameBoard {
 }
 
 class Bomb {
+    id = 0;
+    
     location = {
         "x" : 0,
         "y" : 0
@@ -139,8 +169,9 @@ class Bomb {
         var maxScreenXY = bar.getMaxStartLocation();
         
         this.location.x = Math.floor(Math.random() * 1001) % maxScreenXY.x;
-
         this.img.src = "bomb-3-s.jpg";
+        this.id = bombSerialId;
+        bombSerialId++;
         
         return this;
     }
@@ -356,25 +387,37 @@ function autoDraw() {
     var bulletCount = gameBoard.bullets.length;
     for( var i = 0; i < bulletCount; i = i + 1) {
 	    var b = gameBoard.bullets.shift();
+        if( !b ) {
+            continue;
+        }
+        
 	    b.draw();
         
         if( gameBoard.isBulletHit(b) ) {
             console.log("A direct hit");
             gameBoard.deleteBulletHit(b)
         }
-        else if( ! b.isBulletGone()) {
+        else if( ! b.isBulletGone() ) {
 	        gameBoard.bullets.push(b);
+        }
+        else {
+            gameBoard.removeBulletFromBoard(b);
         }
     }
     
     var bombCount = gameBoard.bombs.length;
     for( var i = 0; i < bombCount; i = i + 1 ) {
         var b = gameBoard.bombs.shift();
-        if( b ) {
-            b.draw();
-            if( ! b.isBombGone() ) {
-                gameBoard.bombs.push(b);
-            }
+        if( !b ) {
+            continue;
+        }
+        
+        b.draw();
+        if( ! b.isBombGone() ) {
+            gameBoard.bombs.push(b);
+        }
+        else {
+            gameBoard.removeBombFromBoard(b);
         }
     }
 }
