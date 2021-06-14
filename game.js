@@ -16,8 +16,73 @@ var fireRate = 300;
 var firingTrigger = 0;
 var addBombRate = 3000;
 
+var gameBoard;
+
 class GameBoard {
+    bullets = new Array();
+    bulletLocation = [[]];
+    bulletRate = 300;
+    bombs = new Array();
+    bombLocation = [[]];
+    bombRate = 3000;
     
+    
+    
+    getLocationKey( b ) {
+        return b.getLocation();
+    }
+    
+    getPrevLocationKey( b ) {
+        return b.getPrevLocation();
+    }
+    
+    addBomb() {
+        var b = new Bomb();
+        var location = this.getLocationKey(b);
+        bombs.push(b);
+        if( ! bombLocation[location.x] ) {
+            bombLocation[location.x] = [];
+        }
+        bombLocation[location.x][location.y] = b;
+    }
+    
+    addBullet() {
+        var b = new Bullet();
+        var location = this.getLocationKey(b);
+        bullets.push(b);
+        if( ! bulletLocation[location.x] ) {
+            bulletLocation[location.x] = [];
+        }
+        bulletLocation[location.x][location.y] = b;
+    }
+    
+    updateBombLocation( b ) {
+        var preLocation = this.getPrevLocationKey(b);
+        var location = this.getLocationKey(b);
+        delete this.bombLocation[preLocation.x][preLocation.y];
+        if( ! this.bombLocation[location.x] ) {
+            this.bombLocation[location.x] = [];
+        }
+        this.bombLocation[location.x][location.y] = b;
+    }
+    
+    updateBulletLocation( b ) {
+        var preLocation = this.getPrevLocationKey(b);
+        var location = this.getLocationKey(b);
+        delete this.bulletLocation[preLocation.x][preLocation.y];
+        if( ! this.bulletLocation[location.x] ) {
+            this.bulletLocation[location.x] = [];
+        }
+        this.bulletLocation[location.x][location.y] = b;
+    }
+    
+    isBulletHit( b ) {
+        var location = this.getLocationKey(b);
+        if( ! this.bombLocation[location.x] ) {
+            return false;
+        }
+        return ( this.bombLocation[location.x][location.y] );
+    }
 }
 
 class Bomb {
@@ -25,6 +90,11 @@ class Bomb {
         "x" : 0,
         "y" : 0
     };
+    
+    prevLocation = {
+        "x" : 0,
+        "y" : 0
+    }
     
     imgSize = {
         "width" : 23,
@@ -34,7 +104,7 @@ class Bomb {
     speed = 1;
     img = new Image();
     
-    init() {
+    constructor() {
         var maxScreenXY = bar.getMaxStartLocation();
         
         this.location.x = Math.floor(Math.random() * 1001) % maxScreenXY.x;
@@ -44,14 +114,35 @@ class Bomb {
         return this;
     }
     
+    init() {
+        return this;
+    }
+    
     draw() {
         ctx.drawImage(this.img, this.location.x, this.location.y);
-
+        
+        this.prevLocation.y = this.location.y;
         this.location.y = this.location.y + this.speed;
+        
+        gameBoard.updateBombLocation(this);
     }
     
     isBombGone() {
         return (this.location.y > bar.getMaxStartLocation().y );
+    }
+    
+    getLocation() {
+        return {
+            x : this.location.x,
+            y : this.location.y
+        };
+    }
+    
+    getPrevLocation() {
+        return {
+            x : this.prevLocation.x,
+            y : this.prevLocation.y
+        };
     }
 }
 
@@ -60,11 +151,18 @@ class Bullet {
 	    "x" : 0,
         "y" : 0
 	};
+    
+    prevLocation = {
+        "x" : 0,
+        "y" : 0
+    }
+    
     imgSize = {
         "width" : 24,
         "height" : 50,
         "r" : 5
     };
+    
     speed = 3;
     img = new Image();
     
@@ -75,10 +173,13 @@ class Bullet {
 
         ctx.drawImage(this.img, this.location.x, this.location.y - this.imgSize.height - bar.getBarThickness());
 
+        this.prevLocation.y = this.location.y;
         this.location.y = this.location.y - this.speed;
+        
+        gameBoard.updateBulletLocation(this);
     }
 
-    init() {
+    constructor() {
 	    this.location = bar.getLocation();
         this.location.x = this.location.x + (bar.getWidth() / 2);
 
@@ -86,9 +187,27 @@ class Bullet {
         
         return this;
     }
+    
+    init() {
+        return this;
+    }
 
     isBulletGone() {
 	    return ( (this.location.y + this.r) < 0 ); 
+    }
+    
+    getLocation() {
+        return {
+            x : this.location.x,
+            y : this.location.y
+        };
+    }
+    
+    getPrevLocation() {
+        return {
+            x : this.prevLocation.x,
+            y : this.prevLocation.y
+        };
     }
 }
 
@@ -115,10 +234,14 @@ class Bar {
         }
     }
 	
-	init() {
+	constructor() {
 		this.setMaxStartLocation();
 		this.location.y = this.maxStartLocation.y;
 	}
+    
+    init() {
+        return this;
+    }
 	
 	getWidth() {
 		return (this.width + 0);
@@ -203,7 +326,11 @@ function autoDraw() {
     for( var i = 0; i < bulletCount; i = i + 1) {
 	    var b = bullets.shift();
 	    b.draw();
-        if( ! b.isBulletGone()) {
+        
+        if( gameBoard.isBulletHit(b) ) {
+            console.log("A direct hit");
+        }
+        else if( ! b.isBulletGone()) {
 	        bullets.push(b);
         }
     }
@@ -278,9 +405,12 @@ function keyUpAction(event) {
 function init( id ) {
 	canvasElement = document.getElementById( id );
     ctx = canvasElement.getContext("2d");
+    
+    gameBoard = new GameBoard();
+    
     bar = new Bar();
     bar.init();
-
+    
     document.onkeydown = keyDownAction;
     document.onkeyup = keyUpAction;
 
