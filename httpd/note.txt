@@ -1,0 +1,7 @@
+
+https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Tutorials.WebServerDB.CreateWebServer.html
+https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SSL-on-amazon-linux-2.html
+
+https://httpd.apache.org/docs/2.4/howto/cgi.html
+https://httpd.apache.org/docs/2.4/mod/core.html#options
+
