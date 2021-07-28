@@ -15,7 +15,9 @@ function Runner() {
             var funcArgs = func["args"];
             
             try {
-                 funcName( funcArgs );
+                 if( funcName( funcArgs ) == 1 ) {
+                     this.addFunc( funcName, funcArgs );
+                 }
             }
             catch( err ) {
                 console.log( "Error function: " + funcName );
