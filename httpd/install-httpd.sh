@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source script_lib.sh
+source "`dirname $0`/script_lib.sh"
 
 echo "Do you want to install appache2 + SSL ? (y/N): "
 read ans
